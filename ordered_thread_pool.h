@@ -36,6 +36,8 @@ class OrderedThreadPool {
   using CompletionFnT = std::function<void(ReturnType)>;
 
  public:
+  // If num_workers is 0, multi-threading will be disabled and Do() will block
+  // the main thread.
   OrderedThreadPool(int num_workers) {
     for (int i = 0; i < num_workers; ++i) {
       workers_.push_back(std::thread(&OrderedThreadPool::Worker, this));
@@ -50,6 +52,12 @@ class OrderedThreadPool {
   // are busy until any one is freed.
   // The on_completion method will be called in the order the jobs were started.
   void Do(JobFnT fn, CompletionFnT on_completion) {
+    if (workers_.empty()) {
+      // Number of threads requested is 0. Run everything on main thread.
+      on_completion(fn());
+      return;
+    }
+    // Push to the job queue and notify.
     std::lock_guard<std::mutex> lck(fn_queue_mtx_);
     fn_queue_.push(Job{
         .job_fn = fn, .completion_fn = on_completion, .job_id = job_count_++});
