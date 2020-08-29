@@ -26,7 +26,10 @@ while (...) {
 }
 ```
 
-Note how this reads very similar to your original code, with the workers abstracted away.
+Note how this reads very similar to the original code. This does a few things -
+* Spawns 10 threads and distributes incoming tasks.
+* If `CostlyFn(...)` takes too long and all threads are busy, this blocks further input. This is governed by the second construction parameter, and can be turned off by passing 0.
+* Even though the function will now be parallelized, the outputs will be displayed in order.
 
 ## Features
 
