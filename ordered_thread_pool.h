@@ -3,19 +3,19 @@
 // This parallelizes jobs of type -
 //
 //   while (...) {
-//     quick_fn(heavy_fn());
+//     UseResult(CostlyFn());
 //   }
 //
 // To parallelize, use the following pattern -
 //
 //   pool = OrderedThreadPool{10};
 //   while (...) {
-//     pool.Do(heavy_fn, quick_fn);
+//     pool.Do(CostlyFn, UseResult);
 //   }
 //
 // Properties -
-// - All heavy_fn()'s are allowed to run in parallel.
-// - All quick_fn()'s are called maintaining order of queuing.
+// - All CostlyFn()'s are allowed to run in parallel.
+// - All UseResult()'s are called maintaining order of queuing.
 // - Avoids repeated thread creation by reusing threads.
 // - If workers are full, this blocks untill next one is free.
 // - On destruction blocks untill all pending work is finished.
