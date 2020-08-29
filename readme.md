@@ -1,6 +1,6 @@
 # OrderedThreadPool
 
-This offers a threadpool implementation, with synchronization.
+This is a lightweight implementation of a threadpool with synchronization.
 
 ## Quick Example
 Imagine you want to parallelize the following code -
@@ -11,9 +11,9 @@ while (...) {
 }
 ```
 
-With the constraint that outputs must be generated in order.
+Also imagine that you want outputs to be printed in order.
 
-With this you can write it out like this -
+With OrderedThreadPool, you can achieve it like below -
 
 ```c++
 OrderedThredPool<std::string> pool{10, 1};
@@ -25,7 +25,8 @@ while (...) {
     });
 }
 ```
-This maintains order. I.e. if `CostlyFn(1)` is called before `CostlyFn(2)`, then the results are also printed in the same order.
+
+Note how this reads very similar to your original code, with the workers abstracted away.
 
 ## Features
 
@@ -50,7 +51,7 @@ sudo apt install ninja-build
 
 ## GoogleTest
 
-This uses GoogleTest for unit testing. Following commands install it in Debian distros.
+This uses GoogleTest for unit testing. Following commands install it in Debian distros -
 
 ```bash
 sudo apt install libgtest-dev build-essential cmake

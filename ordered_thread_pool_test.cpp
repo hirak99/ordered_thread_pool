@@ -4,15 +4,17 @@
 
 // Runs through a given a thread pool. The maximum value seen so far is held at
 // *max. Does not wait for the thread pool to finish.
-void RunTest1(int num_entries, OrderedThreadPool<int>* thread_pool, int* max) {
+void RunTest1(int num_entries, OrderedThreadPool<int>* pool, int* max) {
   for (int i = 0; i < num_entries; ++i) {
-    thread_pool->Do([i]() -> int { return i; },
-                    [i, max](int k) {
-                      ASSERT_EQ(k, i);
-                      if (k > *max) {
-                        *max = k;
-                      }
-                    });
+    pool->Do([i] { return i; },
+             [i, max](const int& k) {
+               // Assert the outputs come in correct order.
+               ASSERT_EQ(k, i);
+               // Update the max output seen so far.
+               if (k > *max) {
+                 *max = k;
+               }
+             });
   }
 }
 
