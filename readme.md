@@ -2,7 +2,7 @@
 
 This offers a threadpool implementation, with synchronization.
 
-## What this does
+## Quick Example
 Imagine you want to parallelize the following code -
 
 ```c++
@@ -35,9 +35,22 @@ This maintains order. I.e. if `CostlyFn(1)` is called before `CostlyFn(2)`, then
 
 # Dependencies
 
+The libraries are header-only, and none of the following dependencies are required to use them in your project.
+
+Nonetheless, they are required to build the tests.
+
+## Ninja
+
+Ninja is a fast build system alternative to make.
+
+Install with -
+```bash
+sudo apt install ninja-build
+```
+
 ## GoogleTest
 
-This uses GoogleTest for unit testing. It may be downloaded with the following in Debian distros.
+This uses GoogleTest for unit testing. Following commands install it in Debian distros.
 
 ```bash
 sudo apt install libgtest-dev build-essential cmake
