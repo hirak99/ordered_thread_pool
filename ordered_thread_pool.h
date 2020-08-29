@@ -76,7 +76,7 @@ class OrderedThreadPool {
     // Push to the job queue and notify.
     std::unique_lock<std::mutex> lck(fn_queue_mtx_);
     job_removed_.wait(lck, [this] {
-      return max_queue_size_ == 0 || fn_queue_.size() < max_queue_size_;
+      return max_queue_size_ == 0 || (int)fn_queue_.size() < max_queue_size_;
     });
     fn_queue_.push(Job{
         .job_fn = fn, .completion_fn = on_completion, .job_id = job_count_++});
