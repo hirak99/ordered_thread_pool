@@ -36,9 +36,17 @@ class OrderedThreadPool {
   using CompletionFnT = std::function<void(ReturnType)>;
 
  public:
-  // If num_workers is 0, multi-threading will be disabled and Do() will block
-  // the main thread.
-  OrderedThreadPool(int num_workers) {
+  /**
+   * Instantiates an ordered queue.
+   *
+   * @param num_workers Number of workers to spawn. A value of 0 will spawn no
+   *   threads, and use the calling thread to perform the work.
+   * @param max_pending_jobs If the work takes long, the calling thread will be
+   *   throttled to prevent it from continuously growing. Useful for unknown
+   *   number of jobs. A value of 0 disables throttling.
+   **/
+  OrderedThreadPool(int num_workers, int max_pending_jobs)
+      : max_queue_size_(max_pending_jobs) {
     for (int i = 0; i < num_workers; ++i) {
       workers_.push_back(std::thread(&OrderedThreadPool::Worker, this));
     }
@@ -48,9 +56,17 @@ class OrderedThreadPool {
   OrderedThreadPool(OrderedThreadPool&& other);
   OrderedThreadPool& operator=(OrderedThreadPool&& other);
 
-  // The main public method for queuing a job. This will block if all threads
-  // are busy until any one is freed.
-  // The on_completion method will be called in the order the jobs were started.
+  /**
+   * Starts processing of a new job.
+   *
+   * The work is logically similar to on_completion(fn()). In fact it is exactly
+   * that if threading is disabled with num_workers = 0 during construction.
+   *
+   * @param fn A function spec that constitutes bulk of the job. This will be
+   *   parallelized.
+   * @param on_completion A function which will be called with the result of
+   *   fn().
+   **/
   void Do(JobFnT fn, CompletionFnT on_completion) {
     if (workers_.empty()) {
       // Number of threads requested is 0. Run everything on main thread.
@@ -58,15 +74,18 @@ class OrderedThreadPool {
       return;
     }
     // Push to the job queue and notify.
-    std::lock_guard<std::mutex> lck(fn_queue_mtx_);
+    std::unique_lock<std::mutex> lck(fn_queue_mtx_);
+    job_removed_.wait(lck, [this] {
+      return max_queue_size_ == 0 || fn_queue_.size() < max_queue_size_;
+    });
     fn_queue_.push(Job{
         .job_fn = fn, .completion_fn = on_completion, .job_id = job_count_++});
-    new_job_.notify_one();
+    job_added_.notify_one();
   }
 
   virtual ~OrderedThreadPool() {
     terminate_now_ = true;
-    new_job_.notify_all();
+    job_added_.notify_all();
     for (std::thread& t : workers_) {
       t.join();
     }
@@ -87,13 +106,16 @@ class OrderedThreadPool {
   // If termination is requested, returns empty.
   std::optional<Job> NextJob() {
     std::unique_lock<std::mutex> lck(fn_queue_mtx_);
-    new_job_.wait(lck, [this] { return !fn_queue_.empty() || terminate_now_; });
+    job_added_.wait(lck,
+                    [this] { return !fn_queue_.empty() || terminate_now_; });
     // If requested to terminate, finish the entire queue and exit.
     if (terminate_now_ && fn_queue_.empty()) {
       return {};
     }
     Job result = fn_queue_.front();
     fn_queue_.pop();
+    lck.unlock();
+    job_removed_.notify_one();
     return result;
   }
 
@@ -126,7 +148,9 @@ class OrderedThreadPool {
   // Queue of functions to execute.
   std::queue<Job> fn_queue_;
   std::mutex fn_queue_mtx_;
-  std::condition_variable new_job_;
+  std::condition_variable job_added_;
+  std::condition_variable job_removed_;
+  int max_queue_size_;
   // Incremental job_id passed to each job.
   size_t job_count_ = 0;
 
