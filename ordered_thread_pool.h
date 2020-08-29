@@ -20,8 +20,8 @@
 // - If workers are full, this blocks untill next one is free.
 // - On destruction blocks untill all pending work is finished.
 //
-#ifndef ORDERED_THRED_POOL_H
-#define ORDERED_THRED_POOL_H
+#ifndef ORDERED_THREAD_POOL_H
+#define ORDERED_THREAD_POOL_H
 
 #include <condition_variable>
 #include <functional>
@@ -51,9 +51,8 @@ class OrderedThreadPool {
   // The on_completion method will be called in the order the jobs were started.
   void Do(JobFnT fn, CompletionFnT on_completion) {
     std::lock_guard<std::mutex> lck(fn_queue_mtx_);
-    fn_queue_.push(Job{.job_fn = fn,
-                       .completion_fn = on_completion,
-                       .ticket_no = job_count_++});
+    fn_queue_.push(Job{
+        .job_fn = fn, .completion_fn = on_completion, .job_id = job_count_++});
     new_job_.notify_one();
   }
 
@@ -67,16 +66,19 @@ class OrderedThreadPool {
 
  private:
   struct Job {
+    // A function which will be parallelized.
     JobFnT job_fn;
+    // A quick function. Output of job_fn will be passed to this method. All
+    // calls to this will happen in same order as enqueuing, and under a lock.
     CompletionFnT completion_fn;
-    size_t ticket_no;
+    // Internal ticket number. Used in waiting for previous jobs.
+    size_t job_id;
   };
 
   // Blocks till a next job is available, or termination signal is received.
   // If termination is requested, returns empty.
   std::optional<Job> NextJob() {
     std::unique_lock<std::mutex> lck(fn_queue_mtx_);
-    fprintf(stderr, "Nextjob...\n");
     new_job_.wait(lck, [this] { return !fn_queue_.empty() || terminate_now_; });
     // If requested to terminate, finish the entire queue and exit.
     if (terminate_now_ && fn_queue_.empty()) {
@@ -84,33 +86,31 @@ class OrderedThreadPool {
     }
     Job result = fn_queue_.front();
     fn_queue_.pop();
-    fprintf(stderr, "Returning job %ld\n", result.ticket_no);
     return result;
   }
 
   void Worker() {
-    fprintf(stderr, "Worker\n");
     while (true) {
-      fprintf(stderr, "Looking for job...\n");
       std::optional<Job> job_opt = NextJob();
       if (!job_opt.has_value()) {
         // This means the workers should terminate.
         return;
       }
       Job job = job_opt.value();
+
+      // This runs parallelly across all threads.
       ReturnType result = job.job_fn();
 
       // Wait till our turn comes.
       std::unique_lock<std::mutex> lck(ticket_mtx_);
-      ticket_update_.wait(
-          lck, [this, &job] { return ticket_num_ == job.ticket_no; });
+      ticket_update_.wait(lck,
+                          [this, &job] { return ticket_num_ == job.job_id; });
       // Perform the second part of the task.
       job.completion_fn(result);
       // Update the next ticket and send a signal to other workers in line.
       ++ticket_num_;
       ticket_update_.notify_all();
     }
-    fprintf(stderr, "Worker ends\n");
   }
 
   // The worker threads are initialized on construction and maintained.
@@ -119,10 +119,11 @@ class OrderedThreadPool {
   std::queue<Job> fn_queue_;
   std::mutex fn_queue_mtx_;
   std::condition_variable new_job_;
+  // Incremental job_id passed to each job.
   size_t job_count_ = 0;
 
   // Ticket system to ensure chronological delivery of jobs. The next job
-  // matching this is allowed to call the completion_fn.
+  // with job_id matching this will proceed with completion_fn().
   size_t ticket_num_ = 0;
   // The mutex to lock for second function.
   std::mutex ticket_mtx_;
@@ -132,4 +133,4 @@ class OrderedThreadPool {
   bool terminate_now_ = false;
 };
 
-#endif  // ORDERED_THRED_POOL_H
+#endif  // ORDERED_THREAD_POOL_H
