@@ -6,7 +6,7 @@
 
 // Uses threadpool on simulated threads.
 int main() {
-  OrderedThreadPool<int> thread_pool{10, 0};
+  OrderedThreadPool<int> thread_pool{10, 5};
   std::cout << "Start..." << std::endl;
   // Used to ensure that the next output comes in correct order.
   int next_expected_val = 0;
