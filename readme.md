@@ -1,6 +1,6 @@
 # OrderedThreadPool
 
-This is a lightweight implementation of a threadpool with synchronization.
+This is a lightweight performant implementation of threadpool with synchronization.
 
 ## Quick Example
 Imagine you want to parallelize the following code -
