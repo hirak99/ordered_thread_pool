@@ -27,9 +27,9 @@ while (...) {
 ```
 
 Note how this reads very similar to the original code. This does a few things -
+* Ensures that the output is displayed in same order as `Do()` was called.
 * Spawns 10 threads and distributes incoming tasks.
-* If `CostlyFn(...)` takes too long and all threads are busy, this blocks further input. This is governed by the second construction parameter, and can be turned off by passing 0.
-* Even though the function will now be parallelized, the outputs will be displayed in order.
+* If `CostlyFn(...)` takes too long and all threads are busy, this blocks further input. This behavior is governed by the second construction parameter, and can be turned off by passing 0.
 
 ## Features
 
