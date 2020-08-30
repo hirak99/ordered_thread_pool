@@ -85,7 +85,13 @@ class OrderedThreadPool {
 
   virtual ~OrderedThreadPool() {
     terminate_now_ = true;
-    job_added_.notify_all();
+    {
+      // Notify holding the lock.
+      // This prevents missing a notification if this executes inbetween when
+      // the wait() checks the predicate to be false and relocks.
+      std::lock_guard<std::mutex> lck(fn_queue_mtx_);
+      job_added_.notify_all();
+    }
     for (std::thread& t : workers_) {
       t.join();
     }
@@ -114,7 +120,6 @@ class OrderedThreadPool {
     }
     Job result = fn_queue_.front();
     fn_queue_.pop();
-    lck.unlock();
     job_removed_.notify_one();
     return result;
   }

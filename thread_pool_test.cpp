@@ -10,8 +10,8 @@ TEST(ThreadPoolTest, Threaded) {
       thread_pool.Do([&visit_count, i] { ++visit_count[i]; });
     }
   }
-  // ASSERT_TRUE(std::all_of(visit_count.begin(), visit_count.end(),
-  //                         [](int value) { return value == 1; }));
+  ASSERT_TRUE(std::all_of(visit_count.begin(), visit_count.end(),
+                          [](int value) { return value == 1; }));
 }
 
 int main(int argc, char** argv) {
