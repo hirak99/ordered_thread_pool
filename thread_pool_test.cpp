@@ -15,6 +15,27 @@ TEST(ThreadPoolTest, Threaded) {
   ASSERT_EQ(visit_count, std::vector<int>(50, 1));
 }
 
+// Tests that jobs are stable even if more than one thread pushes them.
+TEST(ThreadPoolTest, MultiplePusher) {
+  std::vector<int> visit_count(1000, 0);
+  {
+    ThreadPool thread_pool{10, 5};
+    std::thread t1{[&] {
+      for (int i = 0; i < 500; ++i) {
+        thread_pool.Do([&visit_count, i] { ++visit_count[i]; });
+      };
+    }};
+    std::thread t2{[&] {
+      for (int i = 500; i < 1000; ++i) {
+        thread_pool.Do([&visit_count, i] { ++visit_count[i]; });
+      };
+    }};
+    t1.join();
+    t2.join();
+  }
+  ASSERT_EQ(visit_count, std::vector<int>(1000, 1));
+}
+
 // Demonstrates passing parameters via unique_ptr.
 TEST(ThreadPoolTest, UniquePtr) {
   std::vector<int> visit_count(50, 0);

@@ -2,6 +2,8 @@
 
 This is a lightweight performant implementation of threadpool with synchronization.
 
+The implementtion is provided as a header-only library.
+
 ## Quick Example
 Imagine you want to parallelize the following code -
 
