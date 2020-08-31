@@ -22,8 +22,8 @@ TEST(ThreadPoolTest, UniquePtr) {
     ThreadPool thread_pool{10, 5};
     for (int i = 0; i < 50; ++i) {
       auto uptr = std::make_unique<int>(i);
-      // Move to a shared ptr to make it copyable, and hand over to the thread
-      // pool.
+      // Move to a shared ptr to make it copyable, as we send the function as a
+      // copy.
       std::shared_ptr<int> sptr = std::move(uptr);
       thread_pool.Do([&visit_count, sptr] { ++visit_count[*sptr]; });
     }
