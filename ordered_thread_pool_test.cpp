@@ -20,7 +20,7 @@ void RunTest1(int num_entries, OrderedThreadPool<int>* pool, int* max) {
 
 TEST(OrderedThreadPoolTest, Unthreaded) {
   int max = 0;
-  OrderedThreadPool<int> thread_pool{0, 0};
+  OrderedThreadPool<int> thread_pool{0};
   RunTest1(50, &thread_pool, &max);
   ASSERT_EQ(max, 49);
 }

@@ -41,11 +41,10 @@ class OrderedThreadPool {
    *
    * @param num_workers Number of workers to spawn. A value of 0 will spawn no
    *   threads, and use the calling thread to perform the work.
-   * @param max_pending_jobs If the work takes long, the calling thread will be
-   *   throttled to prevent it from continuously growing. Useful for unknown
-   *   number of jobs. A value of 0 disables throttling.
+   * @param max_pending_jobs If the workers are all occupied, and this many jobs
+   *   are in the queue, calling thread will be blocked till a worker is free.
    **/
-  OrderedThreadPool(int num_workers, int max_pending_jobs)
+  OrderedThreadPool(int num_workers, int max_pending_jobs = 1)
       : max_queue_size_(max_pending_jobs) {
     for (int i = 0; i < num_workers; ++i) {
       workers_.push_back(std::thread(&OrderedThreadPool::Worker, this));

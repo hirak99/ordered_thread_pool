@@ -16,7 +16,7 @@
 
 class ThreadPool : public OrderedThreadPool<int> {
  public:
-  ThreadPool(int num_workers, int max_pending_jobs)
+  ThreadPool(int num_workers, int max_pending_jobs = 1)
       : OrderedThreadPool(num_workers, max_pending_jobs) {}
   void Do(std::function<void()> fn) {
     OrderedThreadPool::Do(
