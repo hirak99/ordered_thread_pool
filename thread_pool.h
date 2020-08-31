@@ -28,6 +28,10 @@ class ThreadPool : public OrderedThreadPool<int> {
         },
         [](int) {});
   }
+
+ private:
+  // Hide the inherited form of Do that takes two arguments.
+  using OrderedThreadPool::Do;
 };
 
 #endif  // THREAD_POOL_H
