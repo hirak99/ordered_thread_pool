@@ -2,6 +2,8 @@
 
 This is a lightweight performant implementation of threadpool with synchronization.
 
+An use case is when you want to queue multiple jobs to run in parallel, but their outputs displayed in the same order as they were queued.
+
 The implementtion is provided as a header-only library.
 
 ## Quick Example
