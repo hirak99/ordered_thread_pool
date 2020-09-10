@@ -37,9 +37,23 @@ Note how this reads very similar to the original code. This does a few things -
 
 ## Features
 
-* Avoids thread spawn overhead by instantiating and maintaining threads on construction.
-* Allows disabiling all threading by setting number of threads to 0. This allows rapid prototyping, and can help in debugging threaded logic in a client.
-* Accepts a limit to throttle main thread if queue gets filled up faster than the jobs are finished.
+1. Avoids thread spawn overhead by instantiating and maintaining threads on construction.
+2. Allows disabiling all threading by setting number of threads to 0. This allows rapid prototyping, and can help in debugging threaded logic in a client.
+3. Accepts a limit to throttle main thread if queue gets filled up faster than the jobs are finished.
+4. It does not require the full list of jobs to be known as they are being queued.
+
+## Detailed Specification
+
+Imagins a open ended list of jobs that come in pairs (A1, B1), (A2, B2), (A3, B3), ...
+
+We need to run these jobs with the constraints -
+* All Ai's can be parallelized.
+* All Bi's must be run in order.
+* Each Bi must use output of Ai.
+
+This system enables such an operation.
+
+Ai's indicate a costly job, Bi's indicate a fast job - e.g. writing to some stream.
 
 # Dependencies
 
