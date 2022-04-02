@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
+
+project(OrderedThreadPool HOMEPAGE_URL https://github.com/hirak99/ordered_thread_pool)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
