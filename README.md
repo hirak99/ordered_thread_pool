@@ -44,7 +44,7 @@ Note how this reads very similar to the original code. This does a few things -
 
 ## Detailed Specification
 
-Imagins a open ended list of jobs that come in pairs (A1, B1), (A2, B2), (A3, B3), ...
+Imagine a open ended list of jobs that come in pairs (A1, B1), (A2, B2), (A3, B3), ...
 
 We need to run these jobs with the constraints -
 * All Ai's can be parallelized.
