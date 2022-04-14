@@ -1,0 +1,19 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install gtest
+      run: sudo apt install libgtest-dev build-essential cmake && mkdir gtest_build && cd gtest_build && cmake /usr/src/googletest && sudo cmake --build . --target install && cd .. && rm -r gtest_build
+    - name: build and test
+      run: ./build.sh
