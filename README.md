@@ -1,8 +1,10 @@
 # OrderedThreadPool
 
-This is a lightweight performant implementation of threadpool with synchronization.
+This is a lightweight performant implementation of threadpool with
+synchronization.
 
-An use case is when you want to queue multiple jobs to run in parallel, but their outputs displayed in the same order as they were queued.
+An use case is when you want to queue multiple jobs to run in parallel, but
+their outputs displayed in the same order as they were queued.
 
 The implementtion is provided as a header-only library.
 
@@ -33,18 +35,26 @@ while (...) {
 Note how this reads very similar to the original code. This does a few things -
 * Ensures that the output is displayed in same order as `Do()` was called.
 * Spawns 10 threads and distributes incoming tasks.
-* If `CostlyFn(...)` takes too long and all threads are busy, this blocks further input. This behavior is governed by the second construction parameter, and can be turned off by passing 0.
+* If `CostlyFn(...)` takes too long and all threads are busy, this blocks
+  further input. This behavior is governed by the second construction parameter,
+  and can be turned off by passing 0.
 
 ## Features
 
-1. Avoids thread spawn overhead by instantiating and maintaining threads on construction.
-2. Allows disabiling all threading by setting number of threads to 0. This allows rapid prototyping, and can help in debugging threaded logic in a client.
-3. Accepts a limit to throttle main thread if queue gets filled up faster than the jobs are finished.
-4. It does not require the full list of jobs to be known as they are being queued.
+1. Avoids thread spawn overhead by instantiating and maintaining threads on
+   construction.
+2. Allows disabiling all threading by setting number of threads to 0. This
+   allows rapid prototyping, and can help in debugging threaded logic in a
+   client.
+3. Accepts a limit to throttle main thread if queue gets filled up faster than
+   the jobs are finished.
+4. It does not require the full list of jobs to be known as they are being
+   queued.
 
 ## Detailed Specification
 
-Imagine a open ended list of jobs that come in pairs (A1, B1), (A2, B2), (A3, B3), ...
+Imagine a open ended list of jobs that come in pairs (A1, B1), (A2, B2), (A3,
+B3), ...
 
 We need to run these jobs with the constraints -
 * All Ai's can be parallelized.
@@ -53,26 +63,32 @@ We need to run these jobs with the constraints -
 
 This system enables such an operation.
 
-Ai's indicate a costly job, Bi's indicate a fast job - e.g. writing to some stream.
+Ai's indicate a costly job, Bi's indicate a fast job - e.g. writing to some
+stream.
 
 # Dependencies
 
-The libraries are header-only, and none of the following dependencies are required to use them in your project.
+The libraries are header-only, and none of the following dependencies are
+required to use them in your project.
 
 Nonetheless, they are required to build the tests.
 
-## Ninja
+## (Optional) Ninja
 
-Ninja is a fast build system alternative to make.
+[Ninja](https://ninja-build.org/) is a fast build system alternative to make.
 
 Install with -
 ```bash
 sudo apt install ninja-build
 ```
 
+Uncomment lines in build.sh with ninja, and replace existing lines to build with
+ninja.
+
 ## GoogleTest
 
-This uses GoogleTest for unit testing. Following commands install it in Debian distros -
+This uses GoogleTest for unit testing. Following commands install it in Debian
+distros -
 
 ```bash
 sudo apt install libgtest-dev build-essential cmake
