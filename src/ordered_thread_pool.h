@@ -68,8 +68,8 @@ class OrderedThreadPool {
   }
 
   // Movable but not copyable.
-  OrderedThreadPool(OrderedThreadPool&& other);
-  OrderedThreadPool& operator=(OrderedThreadPool&& other);
+  OrderedThreadPool(OrderedThreadPool&& other) = default;
+  OrderedThreadPool& operator=(OrderedThreadPool&& other) = default;
 
   /**
    * Starts processing of a new job.
